@@ -1,0 +1,306 @@
+<meta charset="utf-8">
+<title>Pierre-Éric Boulland</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pirata+One&family=UnifrakturCook:wght@700&family=Archivo:wght@300;400;500&display=swap">
+
+<style>
+  :root {
+    --ink: #f4efe4;
+    --ink-dim: #a8a196;
+    --ground: #0a0806;
+    --serif-display: "Pirata One", "UnifrakturCook", "Times New Roman", serif;
+    --sans: "Archivo", "Helvetica Neue", system-ui, sans-serif;
+
+    --row-height: clamp(150px, 22vh, 240px);
+    --row-gap: 12px;
+    --tilt: -14deg;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: geometricPrecision;
+  }
+
+  .stage {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  /* ---- Diagonal marquee ---- */
+  .marquee {
+    position: absolute;
+    /* Vertically oversized so the tilted rows cover the top/bottom corners.
+       Horizontally kept close to the viewport width so each tape only needs
+       a modest amount of content to always fill the visible band. */
+    top: -35%; bottom: -35%; left: -15%; right: -15%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--row-gap);
+    transform: rotate(var(--tilt));
+    transform-origin: center;
+  }
+
+  /* Each row flex-grows to fill the marquee vertically — no empty band at
+     top or bottom that could expose the tilted corners. */
+  .row {
+    display: flex;
+    overflow: hidden;
+    flex: 1 1 0;
+    min-height: 0;
+  }
+
+  .tape {
+    display: flex;
+    gap: var(--row-gap);
+    flex-shrink: 0;
+    will-change: transform;
+    animation: scroll linear infinite;
+  }
+
+  /* Each tape contains THREE copies of the same set. Translating -33.333%
+     shifts the tape by exactly one copy, so the wrap-around is invisible.
+     The extra copy means the visible band is always filled from edge to edge,
+     even at the mid-point of the loop. */
+  @keyframes scroll {
+    from { transform: translate3d(0, 0, 0); }
+    to   { transform: translate3d(-33.3333%, 0, 0); }
+  }
+
+  /* Alternate direction and vary duration for a natural feel. */
+  .row:nth-child(odd)  .tape { animation-duration: 72s; }
+  .row:nth-child(even) .tape { animation-duration: 88s; animation-direction: reverse; }
+  .row:nth-child(3n)   .tape { animation-duration: 96s; }
+  .row:nth-child(3n+1) .tape { animation-duration: 64s; }
+
+  .tape img {
+    height: 100%;
+    width: auto;
+    max-width: none;
+    object-fit: cover;
+    display: block;
+    flex-shrink: 0;
+    filter: grayscale(1) contrast(1.12) brightness(1.02);
+    background: #111;
+  }
+
+  /* Very subtle grain layer */
+  .grain {
+    position: absolute;
+    inset: -20%;
+    pointer-events: none;
+    z-index: 3;
+    opacity: .05;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    mix-blend-mode: overlay;
+  }
+
+  /* ---- Centre glass card ---- */
+  main.center {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 6vh 6vw;
+    z-index: 5;
+    animation: settle 1.8s cubic-bezier(.2,.7,.2,1) both;
+    animation-delay: .15s;
+  }
+  @keyframes settle {
+    from { opacity: 0; transform: translateY(6px) scale(.985); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  /* Radial halo — a soft, wide black bloom centred where the text sits.
+     Dense in the middle so the type reads, feathered to transparent so the
+     marquee reappears at the edges. No card, no border, no chrome. */
+  .halo {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 4;
+    background: radial-gradient(
+      ellipse 62% 52% at 50% 50%,
+      rgba(0, 0, 0, 0.98) 0%,
+      rgba(0, 0, 0, 0.95) 22%,
+      rgba(0, 0, 0, 0.78) 45%,
+      rgba(0, 0, 0, 0.45) 68%,
+      rgba(0, 0, 0, 0.15) 88%,
+      transparent 100%
+    );
+  }
+
+  /* Inline-block wrapper: shrinks to the widest child (the name),
+     which lets the letters of "Photographe" justify across that exact width. */
+  .stack {
+    display: inline-block;
+    text-align: center;
+    position: relative;
+    z-index: 6;
+  }
+
+  .name {
+    margin: 0;
+    font-family: var(--serif-display);
+    font-weight: 400;
+    font-size: clamp(2rem, 5.2vw, 3.8rem);
+    line-height: 1.02;
+    letter-spacing: .005em;
+    white-space: nowrap;
+    text-shadow: 0 2px 18px rgba(0,0,0,.5);
+    color: #fbf7ee;
+  }
+
+  .role {
+    display: flex;
+    justify-content: space-between;
+    margin: .7rem 0 0;
+    padding: 0;
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: clamp(.7rem, .95vw, .8rem);
+    text-transform: uppercase;
+    color: #ffffff;
+    text-shadow:
+      0 0 4px rgba(0,0,0,.9),
+      0 1px 10px rgba(0,0,0,.85);
+  }
+  .role span {
+    display: inline-block;
+  }
+  /* Widens the gap between STREET and PHOTOGRAPHER just enough to read as
+     a word break without breaking the justified flex layout. */
+  .role .role-gap {
+    width: 0.9em;
+  }
+
+  .links {
+    margin-top: clamp(1rem, 2vw, 1.4rem);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(1.4rem, 3vw, 2rem);
+  }
+
+  .links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #f4efe4;
+    text-decoration: none;
+    padding: .55rem;
+    border-radius: 999px;
+    transition: color .35s ease, transform .35s ease, background .35s ease;
+  }
+  .links a:hover,
+  .links a:focus-visible {
+    color: #fff;
+    background: rgba(255,255,255,.06);
+    outline: none;
+    transform: translateY(-1px);
+  }
+  .links svg {
+    width: clamp(20px, 2.2vw, 24px);
+    height: clamp(20px, 2.2vw, 24px);
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 0 3px rgba(0,0,0,.85)) drop-shadow(0 1px 6px rgba(0,0,0,.6));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tape { animation-duration: 600s !important; }
+    main.center { animation: none; }
+  }
+</style>
+
+<div class="stage">
+  <div class="marquee" aria-hidden="true">
+    <!-- 8 rows × 10 photos + 10 duplicates each = 20 tags per row.
+         All 40 photos used twice across rows, in different orderings, so no
+         two adjacent rows show the same shot at the same horizontal position.
+         Tape content is duplicated so translateX(-50%) loops seamlessly. -->
+    <div class="row"><div class="tape">
+      <img src="photos/p01.jpg" alt=""><img src="photos/p05.jpg" alt=""><img src="photos/p09.jpg" alt=""><img src="photos/p13.jpg" alt=""><img src="photos/p17.jpg" alt=""><img src="photos/p21.jpg" alt=""><img src="photos/p25.jpg" alt=""><img src="photos/p29.jpg" alt=""><img src="photos/p33.jpg" alt=""><img src="photos/p37.jpg" alt="">
+      <img src="photos/p01.jpg" alt=""><img src="photos/p05.jpg" alt=""><img src="photos/p09.jpg" alt=""><img src="photos/p13.jpg" alt=""><img src="photos/p17.jpg" alt=""><img src="photos/p21.jpg" alt=""><img src="photos/p25.jpg" alt=""><img src="photos/p29.jpg" alt=""><img src="photos/p33.jpg" alt=""><img src="photos/p37.jpg" alt="">
+      <img src="photos/p01.jpg" alt=""><img src="photos/p05.jpg" alt=""><img src="photos/p09.jpg" alt=""><img src="photos/p13.jpg" alt=""><img src="photos/p17.jpg" alt=""><img src="photos/p21.jpg" alt=""><img src="photos/p25.jpg" alt=""><img src="photos/p29.jpg" alt=""><img src="photos/p33.jpg" alt=""><img src="photos/p37.jpg" alt="">
+    </div></div>
+    <div class="row"><div class="tape">
+      <img src="photos/p22.jpg" alt=""><img src="photos/p02.jpg" alt=""><img src="photos/p26.jpg" alt=""><img src="photos/p06.jpg" alt=""><img src="photos/p30.jpg" alt=""><img src="photos/p10.jpg" alt=""><img src="photos/p34.jpg" alt=""><img src="photos/p14.jpg" alt=""><img src="photos/p38.jpg" alt=""><img src="photos/p18.jpg" alt="">
+      <img src="photos/p22.jpg" alt=""><img src="photos/p02.jpg" alt=""><img src="photos/p26.jpg" alt=""><img src="photos/p06.jpg" alt=""><img src="photos/p30.jpg" alt=""><img src="photos/p10.jpg" alt=""><img src="photos/p34.jpg" alt=""><img src="photos/p14.jpg" alt=""><img src="photos/p38.jpg" alt=""><img src="photos/p18.jpg" alt="">
+      <img src="photos/p22.jpg" alt=""><img src="photos/p02.jpg" alt=""><img src="photos/p26.jpg" alt=""><img src="photos/p06.jpg" alt=""><img src="photos/p30.jpg" alt=""><img src="photos/p10.jpg" alt=""><img src="photos/p34.jpg" alt=""><img src="photos/p14.jpg" alt=""><img src="photos/p38.jpg" alt=""><img src="photos/p18.jpg" alt="">
+    </div></div>
+    <div class="row"><div class="tape">
+      <img src="photos/p11.jpg" alt=""><img src="photos/p35.jpg" alt=""><img src="photos/p03.jpg" alt=""><img src="photos/p27.jpg" alt=""><img src="photos/p15.jpg" alt=""><img src="photos/p39.jpg" alt=""><img src="photos/p07.jpg" alt=""><img src="photos/p31.jpg" alt=""><img src="photos/p19.jpg" alt=""><img src="photos/p23.jpg" alt="">
+      <img src="photos/p11.jpg" alt=""><img src="photos/p35.jpg" alt=""><img src="photos/p03.jpg" alt=""><img src="photos/p27.jpg" alt=""><img src="photos/p15.jpg" alt=""><img src="photos/p39.jpg" alt=""><img src="photos/p07.jpg" alt=""><img src="photos/p31.jpg" alt=""><img src="photos/p19.jpg" alt=""><img src="photos/p23.jpg" alt="">
+      <img src="photos/p11.jpg" alt=""><img src="photos/p35.jpg" alt=""><img src="photos/p03.jpg" alt=""><img src="photos/p27.jpg" alt=""><img src="photos/p15.jpg" alt=""><img src="photos/p39.jpg" alt=""><img src="photos/p07.jpg" alt=""><img src="photos/p31.jpg" alt=""><img src="photos/p19.jpg" alt=""><img src="photos/p23.jpg" alt="">
+    </div></div>
+    <div class="row"><div class="tape">
+      <img src="photos/p32.jpg" alt=""><img src="photos/p16.jpg" alt=""><img src="photos/p40.jpg" alt=""><img src="photos/p04.jpg" alt=""><img src="photos/p28.jpg" alt=""><img src="photos/p20.jpg" alt=""><img src="photos/p12.jpg" alt=""><img src="photos/p36.jpg" alt=""><img src="photos/p08.jpg" alt=""><img src="photos/p24.jpg" alt="">
+      <img src="photos/p32.jpg" alt=""><img src="photos/p16.jpg" alt=""><img src="photos/p40.jpg" alt=""><img src="photos/p04.jpg" alt=""><img src="photos/p28.jpg" alt=""><img src="photos/p20.jpg" alt=""><img src="photos/p12.jpg" alt=""><img src="photos/p36.jpg" alt=""><img src="photos/p08.jpg" alt=""><img src="photos/p24.jpg" alt="">
+      <img src="photos/p32.jpg" alt=""><img src="photos/p16.jpg" alt=""><img src="photos/p40.jpg" alt=""><img src="photos/p04.jpg" alt=""><img src="photos/p28.jpg" alt=""><img src="photos/p20.jpg" alt=""><img src="photos/p12.jpg" alt=""><img src="photos/p36.jpg" alt=""><img src="photos/p08.jpg" alt=""><img src="photos/p24.jpg" alt="">
+    </div></div>
+    <div class="row"><div class="tape">
+      <img src="photos/p37.jpg" alt=""><img src="photos/p33.jpg" alt=""><img src="photos/p29.jpg" alt=""><img src="photos/p25.jpg" alt=""><img src="photos/p21.jpg" alt=""><img src="photos/p17.jpg" alt=""><img src="photos/p13.jpg" alt=""><img src="photos/p09.jpg" alt=""><img src="photos/p05.jpg" alt=""><img src="photos/p01.jpg" alt="">
+      <img src="photos/p37.jpg" alt=""><img src="photos/p33.jpg" alt=""><img src="photos/p29.jpg" alt=""><img src="photos/p25.jpg" alt=""><img src="photos/p21.jpg" alt=""><img src="photos/p17.jpg" alt=""><img src="photos/p13.jpg" alt=""><img src="photos/p09.jpg" alt=""><img src="photos/p05.jpg" alt=""><img src="photos/p01.jpg" alt="">
+      <img src="photos/p37.jpg" alt=""><img src="photos/p33.jpg" alt=""><img src="photos/p29.jpg" alt=""><img src="photos/p25.jpg" alt=""><img src="photos/p21.jpg" alt=""><img src="photos/p17.jpg" alt=""><img src="photos/p13.jpg" alt=""><img src="photos/p09.jpg" alt=""><img src="photos/p05.jpg" alt=""><img src="photos/p01.jpg" alt="">
+    </div></div>
+    <div class="row"><div class="tape">
+      <img src="photos/p14.jpg" alt=""><img src="photos/p38.jpg" alt=""><img src="photos/p18.jpg" alt=""><img src="photos/p02.jpg" alt=""><img src="photos/p22.jpg" alt=""><img src="photos/p34.jpg" alt=""><img src="photos/p10.jpg" alt=""><img src="photos/p30.jpg" alt=""><img src="photos/p06.jpg" alt=""><img src="photos/p26.jpg" alt="">
+      <img src="photos/p14.jpg" alt=""><img src="photos/p38.jpg" alt=""><img src="photos/p18.jpg" alt=""><img src="photos/p02.jpg" alt=""><img src="photos/p22.jpg" alt=""><img src="photos/p34.jpg" alt=""><img src="photos/p10.jpg" alt=""><img src="photos/p30.jpg" alt=""><img src="photos/p06.jpg" alt=""><img src="photos/p26.jpg" alt="">
+      <img src="photos/p14.jpg" alt=""><img src="photos/p38.jpg" alt=""><img src="photos/p18.jpg" alt=""><img src="photos/p02.jpg" alt=""><img src="photos/p22.jpg" alt=""><img src="photos/p34.jpg" alt=""><img src="photos/p10.jpg" alt=""><img src="photos/p30.jpg" alt=""><img src="photos/p06.jpg" alt=""><img src="photos/p26.jpg" alt="">
+    </div></div>
+    <div class="row"><div class="tape">
+      <img src="photos/p23.jpg" alt=""><img src="photos/p31.jpg" alt=""><img src="photos/p07.jpg" alt=""><img src="photos/p19.jpg" alt=""><img src="photos/p35.jpg" alt=""><img src="photos/p03.jpg" alt=""><img src="photos/p27.jpg" alt=""><img src="photos/p15.jpg" alt=""><img src="photos/p39.jpg" alt=""><img src="photos/p11.jpg" alt="">
+      <img src="photos/p23.jpg" alt=""><img src="photos/p31.jpg" alt=""><img src="photos/p07.jpg" alt=""><img src="photos/p19.jpg" alt=""><img src="photos/p35.jpg" alt=""><img src="photos/p03.jpg" alt=""><img src="photos/p27.jpg" alt=""><img src="photos/p15.jpg" alt=""><img src="photos/p39.jpg" alt=""><img src="photos/p11.jpg" alt="">
+      <img src="photos/p23.jpg" alt=""><img src="photos/p31.jpg" alt=""><img src="photos/p07.jpg" alt=""><img src="photos/p19.jpg" alt=""><img src="photos/p35.jpg" alt=""><img src="photos/p03.jpg" alt=""><img src="photos/p27.jpg" alt=""><img src="photos/p15.jpg" alt=""><img src="photos/p39.jpg" alt=""><img src="photos/p11.jpg" alt="">
+    </div></div>
+    <div class="row"><div class="tape">
+      <img src="photos/p04.jpg" alt=""><img src="photos/p24.jpg" alt=""><img src="photos/p16.jpg" alt=""><img src="photos/p40.jpg" alt=""><img src="photos/p20.jpg" alt=""><img src="photos/p28.jpg" alt=""><img src="photos/p08.jpg" alt=""><img src="photos/p32.jpg" alt=""><img src="photos/p36.jpg" alt=""><img src="photos/p12.jpg" alt="">
+      <img src="photos/p04.jpg" alt=""><img src="photos/p24.jpg" alt=""><img src="photos/p16.jpg" alt=""><img src="photos/p40.jpg" alt=""><img src="photos/p20.jpg" alt=""><img src="photos/p28.jpg" alt=""><img src="photos/p08.jpg" alt=""><img src="photos/p32.jpg" alt=""><img src="photos/p36.jpg" alt=""><img src="photos/p12.jpg" alt="">
+      <img src="photos/p04.jpg" alt=""><img src="photos/p24.jpg" alt=""><img src="photos/p16.jpg" alt=""><img src="photos/p40.jpg" alt=""><img src="photos/p20.jpg" alt=""><img src="photos/p28.jpg" alt=""><img src="photos/p08.jpg" alt=""><img src="photos/p32.jpg" alt=""><img src="photos/p36.jpg" alt=""><img src="photos/p12.jpg" alt="">
+    </div></div>
+  </div>
+
+
+
+  <div class="grain" aria-hidden="true"></div>
+
+  <div class="halo" aria-hidden="true"></div>
+
+</div>
+
+<main class="center">
+  <div class="stack">
+    <h1 class="name">Pierre-Éric BOULLAND</h1>
+    <p class="role" aria-label="Street Photographer"><span aria-hidden="true">S</span><span aria-hidden="true">T</span><span aria-hidden="true">R</span><span aria-hidden="true">E</span><span aria-hidden="true">E</span><span aria-hidden="true">T</span><span class="role-gap" aria-hidden="true"></span><span aria-hidden="true">P</span><span aria-hidden="true">H</span><span aria-hidden="true">O</span><span aria-hidden="true">T</span><span aria-hidden="true">O</span><span aria-hidden="true">G</span><span aria-hidden="true">R</span><span aria-hidden="true">A</span><span aria-hidden="true">P</span><span aria-hidden="true">H</span><span aria-hidden="true">E</span><span aria-hidden="true">R</span></p>
+    <nav class="links" aria-label="Contact">
+      <a href="mailto:pierre.eric.boulland@gmail.com" aria-label="Mail">
+        <svg viewBox="0 0 24 24">
+          <rect x="3" y="5" width="18" height="14" rx="2.2"/>
+          <path d="M3.4 6.5 12 13l8.6-6.5"/>
+        </svg>
+      </a>
+      <a href="https://www.instagram.com/marv.hell_/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+        <svg viewBox="0 0 24 24">
+          <rect x="3" y="3" width="18" height="18" rx="5"/>
+          <circle cx="12" cy="12" r="4"/>
+          <circle cx="17.6" cy="6.4" r=".9" fill="currentColor" stroke="none"/>
+        </svg>
+      </a>
+    </nav>
+  </div>
+</main>
+
