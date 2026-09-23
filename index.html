@@ -40,10 +40,10 @@
   /* ---- Diagonal marquee ---- */
   .marquee {
     position: absolute;
-    /* Vertically oversized so the tilted rows cover the top/bottom corners.
-       Horizontally kept close to the viewport width so each tape only needs
-       a modest amount of content to always fill the visible band. */
-    top: -35%; bottom: -35%; left: -15%; right: -15%;
+    /* Oversized on all sides so the tilted rows fully cover the viewport
+       corners — needed especially on portrait mobile where the aspect ratio
+       is tall and the tilt exposes the left/right edges otherwise. */
+    top: -35%; bottom: -35%; left: -30%; right: -30%;
     display: flex;
     flex-direction: column;
     gap: var(--row-gap);
@@ -130,12 +130,11 @@
     pointer-events: none;
     z-index: 4;
     background: radial-gradient(
-      ellipse 62% 52% at 50% 50%,
-      rgba(0, 0, 0, 0.98) 0%,
-      rgba(0, 0, 0, 0.95) 22%,
-      rgba(0, 0, 0, 0.78) 45%,
-      rgba(0, 0, 0, 0.45) 68%,
-      rgba(0, 0, 0, 0.15) 88%,
+      ellipse 48% 40% at 50% 50%,
+      rgba(0, 0, 0, 0.96) 0%,
+      rgba(0, 0, 0, 0.90) 25%,
+      rgba(0, 0, 0, 0.62) 52%,
+      rgba(0, 0, 0, 0.25) 78%,
       transparent 100%
     );
   }
